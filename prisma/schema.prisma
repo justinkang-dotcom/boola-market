@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  passwordHash    String
+  name            String
+  college         String
+  classYear       Int
+  bio             String    @default("")
+  createdAt       DateTime  @default(now())
+  listings        Listing[]
+  reviewsReceived Review[]  @relation("SellerReviews")
+  reviewsWritten  Review[]  @relation("BuyerReviews")
+  threadsAsBuyer  Thread[]  @relation("BuyerThreads")
+  threadsAsSeller Thread[]  @relation("SellerThreads")
+  messages        Message[]
+}
+
+model Listing {
+  id          String   @id @default(cuid())
+  sellerId    String
+  seller      User     @relation(fields: [sellerId], references: [id])
+  title       String
+  description String
+  priceCents  Int
+  category    String
+  subcategory String   @default("")
+  condition   String
+  imageUrl    String
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  threads     Thread[]
+  reviews     Review[]
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  sellerId  String
+  seller    User     @relation("SellerReviews", fields: [sellerId], references: [id])
+  buyerId   String
+  buyer     User     @relation("BuyerReviews", fields: [buyerId], references: [id])
+  listingId String?
+  listing   Listing? @relation(fields: [listingId], references: [id])
+  rating    Int
+  body      String
+  createdAt DateTime @default(now())
+
+  @@unique([sellerId, buyerId])
+}
+
+model Thread {
+  id        String    @id @default(cuid())
+  listingId String
+  listing   Listing   @relation(fields: [listingId], references: [id])
+  buyerId   String
+  buyer     User      @relation("BuyerThreads", fields: [buyerId], references: [id])
+  sellerId  String
+  seller    User      @relation("SellerThreads", fields: [sellerId], references: [id])
+  createdAt DateTime  @default(now())
+  messages  Message[]
+
+  @@unique([listingId, buyerId])
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  threadId   String
+  thread     Thread   @relation(fields: [threadId], references: [id])
+  senderId   String
+  sender     User     @relation(fields: [senderId], references: [id])
+  body       String
+  offerCents Int?
+  createdAt  DateTime @default(now())
+}
