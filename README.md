@@ -60,3 +60,13 @@ Sign-up rejects anything that isn’t an `@yale.edu` address.
 | Writing a review | Seller profile |
 |---|---|
 | ![Review](docs/review.png) | ![Seller profile](docs/seller-review.png) |
+
+## Built with Grok Bot
+
+Boola Market was built during the y/cs x SpaceXSI Grokathon by chatting with Grok Bot, which ran a coding agent for us. Here are a few moments from that chat.
+
+![Chat: kicking off the build](docs/chat-1.png)
+
+![Chat: recovering from a stalled run](docs/chat-2.png)
+
+![Chat: planning the demo video](docs/chat-3.png)
