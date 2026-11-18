@@ -10,11 +10,17 @@ import { categoryLabel, classLabel } from "@/lib/constants";
 import { prisma } from "@/lib/db";
 import { money, postedAgo } from "@/lib/format";
 import { listingInclude } from "@/lib/listings";
+import { closeDueAuctions } from "@/lib/sale";
+import { endAuction } from "@/actions";
 
 export default async function ListingPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const listing = await prisma.listing.findUnique({ where: { id }, include: listingInclude });
-  if (!listing || listing.status !== "active") notFound();
+  await closeDueAuctions();
+  const listing = await prisma.listing.findUnique({
+    where: { id },
+    include: { ...listingInclude, sale: { include: { buyer: true } } },
+  });
+  if (!listing) notFound();
 
   const user = await getCurrentUser();
   const mine = user?.id === listing.sellerId;
@@ -51,13 +57,17 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
         </div>
         <aside className="card h-fit space-y-5 p-5 lg:sticky lg:top-24">
           <div>
-            <p className="font-serif text-4xl text-yale">{money(auction ? (high ?? listing.priceCents) : listing.priceCents)}</p>
+            <p className="font-serif text-4xl text-yale">
+              {listing.sale ? money(listing.sale.amountCents) : money(auction ? (high ?? listing.priceCents) : listing.priceCents)}
+            </p>
             <p className="mt-1 text-sm text-mute">
-              {auction
-                ? high == null
-                  ? `Starting bid · pickup in ${listing.seller.college}`
-                  : `Current high · ${history.length} bid${history.length === 1 ? "" : "s"}`
-                : `Offers welcome · pickup in ${listing.seller.college}`}
+              {listing.sale
+                ? `Sold to ${listing.sale.buyer.name.split(" ")[0]} at ${money(listing.sale.amountCents)}`
+                : auction
+                  ? high == null
+                    ? `Starting bid · pickup in ${listing.seller.college}`
+                    : `Current high · ${history.length} bid${history.length === 1 ? "" : "s"}`
+                  : `Offers welcome · pickup in ${listing.seller.college}`}
             </p>
             {auction && listing.endsAt && (
               <p className="mt-2 text-sm font-medium">
@@ -96,9 +106,22 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
               ))}
             </ol>
           )}
-          {mine ? (
+          {listing.sale && user && (user.id === listing.sellerId || user.id === listing.sale.buyerId) && (
+            <Link id="open-handoff" href={`/sales/${listing.sale.id}`} className="btn-primary w-full">
+              Open the handoff
+            </Link>
+          )}
+          {mine && auction && listing.status === "active" && (
+            <form action={endAuction}>
+              <input type="hidden" name="listingId" value={listing.id} />
+              <button id="end-auction" className="btn-primary w-full" type="submit">
+                End auction now
+              </button>
+            </form>
+          )}
+          {mine && !listing.sale ? (
             <p className="text-sm text-mute">This is your listing. {auction ? "Bids will show up here." : "Buyers will message you here."}</p>
-          ) : !user ? (
+          ) : listing.sale ? null : !user ? (
             <div className="rounded-xl bg-yale-mist p-4">
               <p className="text-sm">
                 Sign in with your Yale email to {auction ? "bid or message" : "message"} {listing.seller.name.split(" ")[0]}.

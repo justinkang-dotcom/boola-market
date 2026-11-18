@@ -23,6 +23,9 @@ model User {
   threadsAsSeller Thread[]  @relation("SellerThreads")
   messages        Message[]
   bids            Bid[]
+  salesAsSeller   Sale[]        @relation("SalesAsSeller")
+  salesAsBuyer    Sale[]        @relation("SalesAsBuyer")
+  saleMessages    SaleMessage[]
 }
 
 model Listing {
@@ -43,6 +46,7 @@ model Listing {
   threads     Thread[]
   reviews     Review[]
   bids        Bid[]
+  sale        Sale?
 }
 
 model Bid {
@@ -66,8 +70,34 @@ model Review {
   rating    Int
   body      String
   createdAt DateTime @default(now())
+}
 
-  @@unique([sellerId, buyerId])
+model Sale {
+  id           String        @id @default(cuid())
+  listingId    String        @unique
+  listing      Listing       @relation(fields: [listingId], references: [id])
+  sellerId     String
+  seller       User          @relation("SalesAsSeller", fields: [sellerId], references: [id])
+  buyerId      String
+  buyer        User          @relation("SalesAsBuyer", fields: [buyerId], references: [id])
+  amountCents  Int
+  status       String        @default("won")
+  delivery     Boolean       @default(false)
+  paidMethod   String        @default("")
+  sellerDone   Boolean       @default(false)
+  buyerDone    Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  messages     SaleMessage[]
+}
+
+model SaleMessage {
+  id        String   @id @default(cuid())
+  saleId    String
+  sale      Sale     @relation(fields: [saleId], references: [id])
+  senderId  String
+  sender    User     @relation(fields: [senderId], references: [id])
+  body      String
+  createdAt DateTime @default(now())
 }
 
 model Thread {

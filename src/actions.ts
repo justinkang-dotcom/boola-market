@@ -14,6 +14,7 @@ import {
 } from "./lib/constants";
 import { clearSession, createSession, getCurrentUser, safeNext } from "./lib/auth";
 import { prisma } from "./lib/db";
+import { settleListing } from "./lib/sale";
 
 export type ActionState = { error: string };
 
@@ -242,11 +243,84 @@ export async function saveReview(_prev: ActionState, formData: FormData): Promis
   const seller = await prisma.user.findUnique({ where: { id: sellerId } });
   if (!seller) return { error: "That seller isn’t on Elm." };
 
-  await prisma.review.upsert({
-    where: { sellerId_buyerId: { sellerId, buyerId: user.id } },
-    update: { rating, body },
-    create: { sellerId, buyerId: user.id, rating, body },
+  await prisma.review.create({
+    data: { sellerId, buyerId: user.id, rating, body },
   });
 
   redirect(`/sellers/${sellerId}`);
+}
+
+async function requireParty(saleId: string) {
+  const user = await getCurrentUser();
+  if (!user) return { user: null, sale: null, error: "Log in first." };
+  const sale = await prisma.sale.findUnique({ where: { id: saleId } });
+  if (!sale || (sale.buyerId !== user.id && sale.sellerId !== user.id)) {
+    return { user: null, sale: null, error: "That handoff isn’t yours." };
+  }
+  return { user, sale, error: "" };
+}
+
+export async function endAuction(formData: FormData) {
+  const user = await getCurrentUser();
+  const listingId = str(formData, "listingId");
+  const listing = await prisma.listing.findUnique({ where: { id: listingId } });
+  if (!user || !listing || listing.sellerId !== user.id) redirect("/");
+  const sale = await settleListing(listing.id);
+  redirect(sale ? `/sales/${sale.id}` : `/listings/${listing.id}`);
+}
+
+export async function postSaleMessage(formData: FormData) {
+  const saleId = str(formData, "saleId");
+  const { user, sale, error } = await requireParty(saleId);
+  const body = str(formData, "body");
+  if (!user || !sale || error || body.length < 1) redirect(sale ? `/sales/${sale.id}` : "/");
+  await prisma.saleMessage.create({ data: { saleId: sale.id, senderId: user.id, body } });
+  redirect(`/sales/${sale.id}`);
+}
+
+export async function updateSale(formData: FormData) {
+  const saleId = str(formData, "saleId");
+  const intent = str(formData, "intent");
+  const { user, sale } = await requireParty(saleId);
+  if (!user || !sale || sale.status === "completed") redirect(sale ? `/sales/${sale.id}` : "/");
+
+  if (intent === "delivery") {
+    await prisma.sale.update({ where: { id: sale.id }, data: { delivery: !sale.delivery } });
+  } else if (intent === "meetup" && sale.status === "won") {
+    await prisma.sale.update({ where: { id: sale.id }, data: { status: "meetup" } });
+  } else if (intent === "paid" && sale.status !== "completed") {
+    const method = str(formData, "method") === "cash" ? "cash" : "venmo";
+    await prisma.sale.update({ where: { id: sale.id }, data: { status: "paid", paidMethod: method } });
+  } else if (intent === "confirm") {
+    const sellerDone = sale.sellerDone || user.id === sale.sellerId;
+    const buyerDone = sale.buyerDone || user.id === sale.buyerId;
+    await prisma.sale.update({
+      where: { id: sale.id },
+      data: {
+        sellerDone,
+        buyerDone,
+        status: sellerDone && buyerDone ? "completed" : sale.status === "won" ? "paid" : sale.status,
+        paidMethod: sale.paidMethod || "venmo",
+      },
+    });
+  }
+
+  redirect(`/sales/${sale.id}`);
+}
+
+export async function reviewSale(formData: FormData) {
+  const user = await getCurrentUser();
+  const saleId = str(formData, "saleId");
+  const body = str(formData, "body");
+  const rating = Number(str(formData, "rating"));
+  const sale = await prisma.sale.findUnique({ where: { id: saleId } });
+  if (!user || !sale || sale.status !== "completed") redirect(sale ? `/sales/${sale.id}` : "/");
+  if (sale.buyerId !== user.id && sale.sellerId !== user.id) redirect("/");
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5 || body.length < 8) redirect(`/sales/${sale.id}`);
+
+  const revieweeId = user.id === sale.buyerId ? sale.sellerId : sale.buyerId;
+  await prisma.review.create({
+    data: { sellerId: revieweeId, buyerId: user.id, listingId: sale.listingId, rating, body },
+  });
+  redirect(`/sellers/${revieweeId}`);
 }

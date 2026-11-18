@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Filters } from "@/components/filters";
 import { ListingCard } from "@/components/listing-card";
 import { filterListings, getActiveListings } from "@/lib/listings";
+import { closeDueAuctions } from "@/lib/sale";
 
 export default async function HomePage({
   searchParams,
@@ -9,6 +10,7 @@ export default async function HomePage({
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const sp = await searchParams;
+  await closeDueAuctions();
   const all = await getActiveListings();
   const listings = filterListings(all, sp);
   const filtering = Boolean(sp.q || sp.category || sp.subcategory || sp.college || sp.condition || sp.max || sp.sale || sp.senior);

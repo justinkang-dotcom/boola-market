@@ -15,6 +15,8 @@ async function main() {
     return;
   }
 
+  await prisma.saleMessage.deleteMany();
+  await prisma.sale.deleteMany();
   await prisma.bid.deleteMany();
   await prisma.message.deleteMany();
   await prisma.thread.deleteMany();
