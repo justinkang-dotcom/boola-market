@@ -11,7 +11,7 @@ export default async function SignupPage({
   return (
     <div className="mx-auto max-w-lg py-4">
       <section className="card p-6 sm:p-8">
-        <h1 className="font-serif text-4xl text-yale">Create your Elm account</h1>
+        <h1 className="font-serif text-4xl text-yale">Create your Boola Market account</h1>
         <p className="mt-2 text-sm text-mute">
           @yale.edu only. Your college shows up on every listing so buyers know where to meet you.
         </p>

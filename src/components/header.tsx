@@ -13,7 +13,7 @@ export async function Header() {
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3">
         <Link href="/" className="order-1 flex items-center gap-1.5">
           <Leaf />
-          <span className="font-serif text-[1.9rem] italic leading-none tracking-tight text-yale">elm</span>
+          <span className="font-serif text-xl leading-none tracking-tight text-yale sm:text-2xl">Boola Market</span>
         </Link>
         <form action="/" className="order-3 w-full md:order-2 md:w-auto md:flex-1">
           <label className="sr-only" htmlFor="header-search">

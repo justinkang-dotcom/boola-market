@@ -30,6 +30,7 @@ export async function settleListing(listingId: string) {
       buyerId: winner.bidderId,
       amountCents: winner.amountCents,
       status: "won",
+      handoff: listing.category === "Tickets" ? "digital" : "pickup",
     },
   });
 }

@@ -30,7 +30,7 @@ export async function signup(_prev: ActionState, formData: FormData): Promise<Ac
   const classYear = Number(str(formData, "classYear"));
 
   if (name.length < 2) return { error: "Add your name so buyers know who they’re dealing with." };
-  if (!isYaleEmail(email)) return { error: "Elm is only for @yale.edu addresses." };
+  if (!isYaleEmail(email)) return { error: "Boola Market is only for @yale.edu addresses." };
   if (password.length < 6) return { error: "Use a password of at least 6 characters." };
   if (!COLLEGES.includes(college as (typeof COLLEGES)[number])) {
     return { error: "Pick your residential college." };
@@ -40,7 +40,7 @@ export async function signup(_prev: ActionState, formData: FormData): Promise<Ac
   }
 
   const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) return { error: "That Yale email already has an Elm account. Log in instead." };
+  if (existing) return { error: "That Yale email already has a Boola Market account. Log in instead." };
 
   const user = await prisma.user.create({
     data: {
@@ -60,10 +60,10 @@ export async function login(_prev: ActionState, formData: FormData): Promise<Act
   const email = str(formData, "email").toLowerCase();
   const password = str(formData, "password");
 
-  if (!isYaleEmail(email)) return { error: "Elm is only for @yale.edu addresses." };
+  if (!isYaleEmail(email)) return { error: "Boola Market is only for @yale.edu addresses." };
 
   const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) return { error: "No Elm account for that email. Create one with your @yale.edu address." };
+  if (!user) return { error: "No Boola Market account for that email. Create one with your @yale.edu address." };
 
   const ok = await bcrypt.compare(password, user.passwordHash);
   if (!ok) return { error: "Wrong password." };
@@ -241,7 +241,7 @@ export async function saveReview(_prev: ActionState, formData: FormData): Promis
   if (body.length < 8) return { error: "Write a sentence about how the sale went." };
 
   const seller = await prisma.user.findUnique({ where: { id: sellerId } });
-  if (!seller) return { error: "That seller isn’t on Elm." };
+  if (!seller) return { error: "That seller isn’t on Boola Market." };
 
   await prisma.review.create({
     data: { sellerId, buyerId: user.id, rating, body },
@@ -288,19 +288,21 @@ export async function updateSale(formData: FormData) {
     await prisma.sale.update({ where: { id: sale.id }, data: { delivery: !sale.delivery } });
   } else if (intent === "meetup" && sale.status === "won") {
     await prisma.sale.update({ where: { id: sale.id }, data: { status: "meetup" } });
-  } else if (intent === "paid" && sale.status !== "completed") {
+  } else if (intent === "paid" && (sale.status === "won" || sale.status === "meetup")) {
     const method = str(formData, "method") === "cash" ? "cash" : "venmo";
     await prisma.sale.update({ where: { id: sale.id }, data: { status: "paid", paidMethod: method } });
+  } else if (intent === "transferred" && sale.handoff === "digital" && sale.status === "paid") {
+    await prisma.sale.update({ where: { id: sale.id }, data: { status: "transferred" } });
   } else if (intent === "confirm") {
     const sellerDone = sale.sellerDone || user.id === sale.sellerId;
     const buyerDone = sale.buyerDone || user.id === sale.buyerId;
+    const ready = sale.handoff === "digital" ? sale.status === "transferred" : sale.status === "paid";
     await prisma.sale.update({
       where: { id: sale.id },
       data: {
         sellerDone,
         buyerDone,
-        status: sellerDone && buyerDone ? "completed" : sale.status === "won" ? "paid" : sale.status,
-        paidMethod: sale.paidMethod || "venmo",
+        status: ready && sellerDone && buyerDone ? "completed" : sale.status,
       },
     });
   }

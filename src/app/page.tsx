@@ -21,10 +21,10 @@ export default async function HomePage({
         <img src="/photos/campus.jpg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-45" />
         <div className="absolute inset-0 bg-gradient-to-r from-yale via-yale/88 to-yale/25" />
         <div className="relative max-w-2xl px-6 py-10 sm:px-10 sm:py-12">
-          <p className="text-xs font-medium uppercase tracking-[0.22em] text-white/80">Boola Boola deals</p>
-          <h1 className="mt-2 font-serif text-4xl leading-tight sm:text-5xl">Buy and sell with people you can actually name.</h1>
+          <p className="text-xs font-medium uppercase tracking-[0.22em] text-white/80">Boola Market</p>
+          <h1 className="mt-2 font-serif text-4xl leading-tight sm:text-5xl">Where Yale's supply meets demand.</h1>
           <p className="mt-3 max-w-xl text-base text-white/85 sm:text-lg">
-            The Game tickets, YSO seats, and the fridge that will not fit in a cab off campus. Every seller has a verified @yale.edu email, a residential college, and a rating.
+            Verified sellers, honest reviews, no lemons. The Game tickets, YSO seats, and the fridge that will not survive a move.
           </p>
         </div>
       </section>
