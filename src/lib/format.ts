@@ -12,6 +12,18 @@ export function ratingSummary(reviews: { rating: number }[]) {
   return { average: Math.round(average * 10) / 10, count: reviews.length };
 }
 
+export function timeLeft(endsAt: Date, now = Date.now()) {
+  const seconds = Math.floor((endsAt.getTime() - now) / 1000);
+  if (seconds <= 0) return "Ended";
+  const days = Math.floor(seconds / 86_400);
+  const hours = Math.floor((seconds % 86_400) / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  if (days > 0) return `${days}d ${hours}h left`;
+  if (hours > 0) return `${hours}h ${minutes}m left`;
+  return `${minutes}m ${secs}s left`;
+}
+
 export function postedAgo(date: Date) {
   const days = Math.floor((Date.now() - date.getTime()) / 86_400_000);
   if (days <= 0) return "Today";

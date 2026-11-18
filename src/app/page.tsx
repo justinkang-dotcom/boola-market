@@ -11,18 +11,20 @@ export default async function HomePage({
   const sp = await searchParams;
   const all = await getActiveListings();
   const listings = filterListings(all, sp);
-  const filtering = Boolean(sp.q || sp.category || sp.subcategory || sp.college || sp.condition || sp.max);
+  const filtering = Boolean(sp.q || sp.category || sp.subcategory || sp.college || sp.condition || sp.max || sp.sale || sp.senior);
 
   return (
     <div className="space-y-6">
-      <section className="max-w-2xl">
-        <p className="text-sm font-medium uppercase tracking-[0.16em] text-yale">Verified @yale.edu only</p>
-        <h1 className="mt-2 font-serif text-4xl leading-tight text-ink sm:text-5xl">
-          Buy and sell with people you can actually name.
-        </h1>
-        <p className="mt-3 text-base text-mute sm:text-lg">
-          Tickets for The Game and YSO, textbooks, and the dorm furniture that will not fit in a car home. Every seller has a Yale email, a college, and a rating.
-        </p>
+      <section className="relative overflow-hidden rounded-3xl bg-yale text-white">
+        <img src="/photos/campus.jpg" alt="" className="absolute inset-0 h-full w-full object-cover opacity-45" />
+        <div className="absolute inset-0 bg-gradient-to-r from-yale via-yale/88 to-yale/25" />
+        <div className="relative max-w-2xl px-6 py-10 sm:px-10 sm:py-12">
+          <p className="text-xs font-medium uppercase tracking-[0.22em] text-white/80">Boola Boola deals</p>
+          <h1 className="mt-2 font-serif text-4xl leading-tight sm:text-5xl">Buy and sell with people you can actually name.</h1>
+          <p className="mt-3 max-w-xl text-base text-white/85 sm:text-lg">
+            The Game tickets, YSO seats, and the fridge that will not fit in a cab off campus. Every seller has a verified @yale.edu email, a residential college, and a rating.
+          </p>
+        </div>
       </section>
       <Filters sp={sp} />
       <div className="flex items-baseline justify-between gap-3">

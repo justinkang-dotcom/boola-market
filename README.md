@@ -33,7 +33,8 @@ Sign-up rejects anything that isn’t an `@yale.edu` address. Try `jordan@gmail.
 
 ## What you can do
 
-- Browse, search, and filter listings by category (Tickets, including YSO and Harvard–Yale, plus Furniture, Textbooks, Electronics, Clothing, and Other), college, condition, and price.
+- Browse, search, and filter listings by category (Tickets, including YSO and The Game, plus Furniture, Textbooks, Electronics, Clothing, and Other), college, condition, price, and auctions.
+- Post a fixed price or an auction with a starting bid and end time. Buyers place bids that have to beat the current high.
 - Open a listing, then message the seller and attach an offer or counteroffer.
 - Open a seller profile for the verified badge, average rating, and written reviews.
 - Create an account and post a listing with a photo URL or an upload.

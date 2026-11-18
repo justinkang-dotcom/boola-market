@@ -22,6 +22,7 @@ model User {
   threadsAsBuyer  Thread[]  @relation("BuyerThreads")
   threadsAsSeller Thread[]  @relation("SellerThreads")
   messages        Message[]
+  bids            Bid[]
 }
 
 model Listing {
@@ -36,9 +37,22 @@ model Listing {
   condition   String
   imageUrl    String
   status      String   @default("active")
+  saleType    String   @default("fixed")
+  endsAt      DateTime?
   createdAt   DateTime @default(now())
   threads     Thread[]
   reviews     Review[]
+  bids        Bid[]
+}
+
+model Bid {
+  id          String   @id @default(cuid())
+  listingId   String
+  listing     Listing  @relation(fields: [listingId], references: [id])
+  bidderId    String
+  bidder      User     @relation(fields: [bidderId], references: [id])
+  amountCents Int
+  createdAt   DateTime @default(now())
 }
 
 model Review {

@@ -35,7 +35,7 @@ export default async function SellerPage({ params }: { params: Promise<{ id: str
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="font-serif text-4xl text-ink">{seller.name}</h1>
-              <YaleBadge />
+              <YaleBadge long />
             </div>
             <p className="mt-1 text-mute">
               {seller.college} College · Class of {seller.classYear}

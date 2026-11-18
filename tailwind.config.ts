@@ -8,20 +8,20 @@ const config: Config = {
         yale: {
           DEFAULT: "#00356B",
           dark: "#002349",
-          mid: "#1F5FA8",
+          mid: "#286DC0",
           mist: "#E7EEF6",
         },
         gold: {
           DEFAULT: "#A6842A",
           soft: "#F4E8C8",
         },
-        paper: "#F3F0E8",
+        paper: "#FBF8F2",
         ink: "#142033",
         mute: "#5C6B7A",
         line: "#E4DDD0",
       },
       fontFamily: {
-        serif: ["var(--font-fraunces)", "Georgia", "serif"],
+        serif: ["var(--font-garamond)", "Palatino", "Georgia", "serif"],
         sans: ["var(--font-outfit)", "ui-sans-serif", "system-ui", "sans-serif"],
       },
       boxShadow: {

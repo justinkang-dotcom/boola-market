@@ -85,13 +85,24 @@ export async function createListing(_prev: ActionState, formData: FormData): Pro
   const category = str(formData, "category");
   const condition = str(formData, "condition");
   const subcategoryInput = str(formData, "subcategory");
+  const saleType = str(formData, "saleType") === "auction" ? "auction" : "fixed";
   const price = Number(str(formData, "price").replace(/[$,]/g, ""));
 
   if (title.length < 4) return { error: "Give the listing a clearer title." };
   if (description.length < 12) return { error: "Add a short description — condition, pickup, what’s included." };
   if (!CATEGORIES.includes(category as (typeof CATEGORIES)[number])) return { error: "Pick a category." };
   if (!CONDITIONS.includes(condition as (typeof CONDITIONS)[number])) return { error: "Pick a condition." };
-  if (!Number.isFinite(price) || price <= 0) return { error: "Add a price in dollars." };
+  if (!Number.isFinite(price) || price <= 0) {
+    return { error: saleType === "auction" ? "Add a starting bid in dollars." : "Add a price in dollars." };
+  }
+
+  let endsAt: Date | null = null;
+  if (saleType === "auction") {
+    endsAt = new Date(str(formData, "endsAt"));
+    if (Number.isNaN(endsAt.getTime()) || endsAt.getTime() <= Date.now()) {
+      return { error: "Pick an auction end time in the future." };
+    }
+  }
 
   const subcategory =
     category === "Tickets"
@@ -128,6 +139,8 @@ export async function createListing(_prev: ActionState, formData: FormData): Pro
       condition,
       priceCents: Math.round(price * 100),
       imageUrl,
+      saleType,
+      endsAt,
     },
   });
 
@@ -179,6 +192,39 @@ export async function sendMessage(_prev: ActionState, formData: FormData): Promi
   });
 
   redirect(`/messages/${thread.id}`);
+}
+
+export async function placeBid(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const user = await getCurrentUser();
+  if (!user) return { error: "Log in with your Yale email to bid." };
+
+  const listingId = str(formData, "listingId");
+  const amount = Number(str(formData, "amount").replace(/[$,]/g, ""));
+  if (!Number.isFinite(amount) || amount <= 0) return { error: "Enter a bid in dollars." };
+  const amountCents = Math.round(amount * 100);
+
+  const listing = await prisma.listing.findUnique({
+    where: { id: listingId },
+    include: { bids: { select: { amountCents: true } } },
+  });
+  if (!listing || listing.status !== "active" || listing.saleType !== "auction") {
+    return { error: "That auction isn’t open." };
+  }
+  if (!listing.endsAt || listing.endsAt.getTime() <= Date.now()) return { error: "This auction has ended." };
+  if (listing.sellerId === user.id) return { error: "You can’t bid on your own listing." };
+
+  const high = listing.bids.reduce((max, bid) => Math.max(max, bid.amountCents), 0);
+  const minimum = listing.bids.length ? high + 100 : listing.priceCents;
+  if (amountCents < minimum) {
+    const dollars = minimum / 100;
+    return { error: listing.bids.length ? `Bid more than the current high. Next bid is $${dollars}.` : `The opening bid is $${dollars}.` };
+  }
+
+  await prisma.bid.create({
+    data: { listingId: listing.id, bidderId: user.id, amountCents },
+  });
+
+  redirect(`/listings/${listing.id}`);
 }
 
 export async function saveReview(_prev: ActionState, formData: FormData): Promise<ActionState> {

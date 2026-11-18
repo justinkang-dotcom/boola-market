@@ -9,6 +9,7 @@ export async function Header() {
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-paper/90 backdrop-blur">
       <div className="h-1 bg-yale" />
+      <div className="h-0.5 bg-yale-mid" />
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3">
         <Link href="/" className="order-1 flex items-center gap-1.5">
           <Leaf />

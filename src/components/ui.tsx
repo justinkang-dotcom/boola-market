@@ -1,16 +1,37 @@
+import { COLLEGE_COLORS } from "@/lib/constants";
 import { avatarColor, initials, ratingSummary } from "@/lib/format";
 
-export function YaleBadge() {
+export function Bulldog({ className = "h-3.5 w-3.5" }: { className?: string }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-gold-soft px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-[#6E5416]">
-      <svg viewBox="0 0 16 16" className="h-3 w-3" aria-hidden="true">
-        <path
-          fill="currentColor"
-          d="M8 1.2 9.4 3h2.8l-1.6 2.2.8 2.8L8 6.6 4.6 8l.8-2.8L3.8 3h2.8L8 1.2Z"
-        />
-        <path fill="currentColor" d="M3.2 9.2h9.6V14L8 12.2 3.2 14V9.2Z" />
-      </svg>
-      Yale
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M6 9.2c0-2.6 2.2-5 6-5s6 2.4 6 5v1.2h1.2c.7 0 1.3.6 1.3 1.3v2.2c0 1.6-1.2 2.8-2.7 2.8h-.4c-.5 1.8-2.2 3.3-5.4 3.3s-4.9-1.5-5.4-3.3h-.4C4.7 16.7 3.5 15.5 3.5 13.9v-2.2c0-.7.6-1.3 1.3-1.3H6V9.2Z"
+      />
+      <circle cx="9.2" cy="11" r="1" fill="#FBF8F2" />
+      <circle cx="14.8" cy="11" r="1" fill="#FBF8F2" />
+      <path d="M9.2 15.2c.8.7 1.7 1 2.8 1s2-.3 2.8-1" stroke="#FBF8F2" strokeWidth="1" fill="none" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function YaleBadge({ long = false }: { long?: boolean }) {
+  return (
+    <span
+      title="Handsome Dan approved"
+      className="inline-flex items-center gap-1 rounded-full bg-yale-mist px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-yale"
+    >
+      <Bulldog />
+      {long ? "Handsome Dan approved" : "Yale"}
+    </span>
+  );
+}
+
+export function CollegeChip({ college }: { college: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: COLLEGE_COLORS[college] || "#00356B" }} />
+      {college}
     </span>
   );
 }

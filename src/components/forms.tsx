@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { createListing, login, saveReview, sendMessage, signup, type ActionState } from "@/actions";
+import { createListing, login, placeBid, saveReview, sendMessage, signup, type ActionState } from "@/actions";
 import { CATEGORIES, CLASS_YEARS, COLLEGES, CONDITIONS, DEMO_EMAIL, DEMO_PASSWORD, TICKET_TYPES } from "@/lib/constants";
 
 const initial: ActionState = { error: "" };
@@ -126,6 +126,7 @@ export function SignupForm({ next }: { next?: string }) {
 export function ListingForm() {
   const [state, action, pending] = useActionState(createListing, initial);
   const [category, setCategory] = useState("Furniture");
+  const [saleType, setSaleType] = useState("fixed");
 
   return (
     <form action={action} className="space-y-4">
@@ -148,11 +149,28 @@ export function ListingForm() {
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
+          <label className="label" htmlFor="saleType">
+            Sale type
+          </label>
+          <select id="saleType" name="saleType" value={saleType} onChange={(event) => setSaleType(event.target.value)}>
+            <option value="fixed">Fixed price</option>
+            <option value="auction">Auction</option>
+          </select>
+        </div>
+        <div>
           <label className="label" htmlFor="price">
-            Price (USD)
+            {saleType === "auction" ? "Starting bid (USD)" : "Price (USD)"}
           </label>
           <input id="price" name="price" inputMode="decimal" required placeholder="40" />
         </div>
+        {saleType === "auction" && (
+          <div className="sm:col-span-2">
+            <label className="label" htmlFor="endsAt">
+              Auction ends
+            </label>
+            <input id="endsAt" name="endsAt" type="datetime-local" required />
+          </div>
+        )}
         <div>
           <label className="label" htmlFor="condition">
             Condition
@@ -208,6 +226,27 @@ export function ListingForm() {
       {state.error && <p className="text-sm text-red-700">{state.error}</p>}
       <button className="btn-primary" disabled={pending} type="submit">
         {pending ? "Posting…" : "Post listing"}
+      </button>
+    </form>
+  );
+}
+
+export function BidForm({ listingId, minimum }: { listingId: string; minimum: number }) {
+  const [state, action, pending] = useActionState(placeBid, initial);
+
+  return (
+    <form action={action} className="space-y-3">
+      <input type="hidden" name="listingId" value={listingId} />
+      <div>
+        <label className="label" htmlFor="amount">
+          Your bid
+        </label>
+        <input id="amount" name="amount" inputMode="decimal" required placeholder={String(minimum)} />
+        <p className="mt-1 text-xs text-mute">Minimum ${minimum}.</p>
+      </div>
+      {state.error && <p className="text-sm text-red-700">{state.error}</p>}
+      <button className="btn-primary w-full" disabled={pending} type="submit">
+        {pending ? "Placing bid…" : "Place bid"}
       </button>
     </form>
   );

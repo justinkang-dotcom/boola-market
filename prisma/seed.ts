@@ -15,6 +15,7 @@ async function main() {
     return;
   }
 
+  await prisma.bid.deleteMany();
   await prisma.message.deleteMany();
   await prisma.thread.deleteMany();
   await prisma.review.deleteMany();
@@ -41,7 +42,7 @@ async function main() {
   }
 
   const specs = [
-    ["game-pair", "taylor", "Two Harvard–Yale tickets, Yale Bowl, Nov 21", "Two together, section 12, row G, Saturday Nov 21. My parents can’t make The Game and I’d rather these stay with someone at Yale than a random reseller. Face was $65 each. Asking $90 for the pair. Meet on Cross Campus or at Berkeley.", 90, "Tickets", "Harvard-Yale", "Good", "/photos/game.jpg", 2],
+    ["game-pair", "taylor", "The Game tickets, Yale Bowl, Nov 21", "Two together, section 12, row G, Saturday Nov 21. My parents can’t make The Game and I’d rather these stay on campus than with a reseller. Face was $65 each. Asking $90 for the pair. Meet on Cross Campus or at Berkeley.", 90, "Tickets", "Harvard-Yale", "Good", "/photos/game.jpg", 2],
     ["game-one", "taylor", "Single Harvard–Yale ticket, same section", "One seat, section 12, a few rows back from the pair I’m also selling. PDF transfer the morning of The Game. $55, or make an offer if you’re coming from a resco near Berkeley.", 55, "Tickets", "Harvard-Yale", "Like New", "/photos/game.jpg", 1],
     ["yso", "chris", "YSO at Woolsey — Mahler 1, Friday", "One seat, center orchestra, Woolsey Hall, Friday Nov 20. I have a prelim I can’t move. $12, and I’ll send the box office transfer as soon as you pay.", 12, "Tickets", "YSO", "New", "/photos/yso.jpg", 1],
     ["chamber", "maya", "YSO chamber at Sudler, two seats", "Sunday Nov 22, 4pm, Sudler Hall. Friends bailed. $8 for the pair. I’ll forward the confirmation email.", 8, "Tickets", "YSO", "New", "/photos/tickets.jpg", 4],
@@ -72,6 +73,54 @@ async function main() {
         condition,
         imageUrl,
         createdAt: ago(days),
+      },
+    });
+  }
+
+  const auctions = [
+    ["game-bid", "taylor", "The Game, student section — auction", "Two seats together, student section, Yale Bowl, Saturday Nov 21. Starting at $40. I’ll transfer the PDF to the high bidder Friday night. Pickup talk can happen on Cross Campus.", 40, "Tickets", "Harvard-Yale", "New", "/photos/game.jpg", 5],
+    ["yso-bid", "chris", "YSO at Woolsey — auction", "One center-orchestra seat for Mahler 1, Friday Nov 20. Prelims got worse. Starting at $8. High bidder gets the box office transfer.", 8, "Tickets", "YSO", "New", "/photos/yso.jpg", 18],
+    ["calc-bid", "alex", "Stewart Calculus, auction", "Early Transcendentals, mostly clean. Used it for MATH 115. Starting at $15. Meet at TD or Bass before the auction ends.", 15, "Textbooks", "", "Good", "/photos/books.jpg", 40],
+    ["scarf-bid", "priya", "Yale scarf, navy — auction", "Bookstore scarf, one winter old, no holes. Starting at $12. Branford gate, high bidder picks it up.", 12, "Clothing", "", "Like New", "/photos/coat.jpg", 8],
+  ] as const;
+
+  for (const [key, seller, title, description, dollars, category, subcategory, condition, imageUrl, endsHours] of auctions) {
+    listings[key] = await prisma.listing.create({
+      data: {
+        sellerId: people[seller].id,
+        title,
+        description,
+        priceCents: dollars * 100,
+        category,
+        subcategory,
+        condition,
+        imageUrl,
+        saleType: "auction",
+        endsAt: new Date(Date.now() + endsHours * 3_600_000),
+        createdAt: ago(1),
+      },
+    });
+  }
+
+  const bidRows = [
+    ["game-bid", "jordan", 48, 5],
+    ["game-bid", "alex", 61, 2],
+    ["game-bid", "maya", 74, 0.4],
+    ["yso-bid", "jordan", 10, 6],
+    ["yso-bid", "priya", 14, 2],
+    ["calc-bid", "sam", 18, 8],
+    ["calc-bid", "riley", 22, 3],
+    ["scarf-bid", "chris", 15, 4],
+    ["scarf-bid", "taylor", 19, 1],
+  ] as const;
+
+  for (const [key, bidder, dollars, hoursAgo] of bidRows) {
+    await prisma.bid.create({
+      data: {
+        listingId: listings[key].id,
+        bidderId: people[bidder].id,
+        amountCents: dollars * 100,
+        createdAt: new Date(Date.now() - hoursAgo * 3_600_000),
       },
     });
   }

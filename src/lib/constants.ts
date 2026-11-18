@@ -1,3 +1,20 @@
+export const COLLEGE_COLORS: Record<string, string> = {
+  Berkeley: "#00356B",
+  Branford: "#286DC0",
+  Davenport: "#8C4A32",
+  "Ezra Stiles": "#1F6B4A",
+  "Jonathan Edwards": "#8C2F39",
+  "Benjamin Franklin": "#A6842A",
+  "Grace Hopper": "#3D4F8C",
+  Morse: "#5C4A32",
+  "Pauli Murray": "#7A3E6D",
+  Pierson: "#1A5276",
+  Saybrook: "#2F5D50",
+  Silliman: "#8A5A2B",
+  "Timothy Dwight": "#4A3F73",
+  Trumbull: "#6E2E2E",
+};
+
 export const COLLEGES = [
   "Berkeley",
   "Branford",
