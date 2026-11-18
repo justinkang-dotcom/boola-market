@@ -4,6 +4,12 @@ Where Yale's supply meets demand. Verified sellers, honest reviews, no lemons.
 
 A Yale-only student marketplace. Every account is an `@yale.edu` email, and every listing shows the seller’s residential college, a verified Yale badge, and ratings from people who actually bought from them.
 
+## Demo video
+
+![Boola Market demo: posting a ticket auction, bidding, transfer, and reviews](docs/demo.gif)
+
+[Watch the full 66-second demo (MP4)](https://github.com/justinkang-dotcom/boola-market/raw/main/docs/demo.mp4)
+
 ## Why Boola Market
 
 Anonymous campus apps like Fizz have the lemons problem. Buyers cannot tell a real ticket from a screenshot, a working fridge from a dead one, or a seller who will show up from one who will not. When quality is hidden, people assume the worst and good sellers leave. That is Akerlof's market for lemons: information asymmetry empties the market.
@@ -49,7 +55,7 @@ Sign-up rejects anything that isn’t an `@yale.edu` address.
 
 ## Demo
 
-[Watch the 66-second demo](docs/demo.mp4)
+[Watch the 66-second demo (MP4)](https://github.com/justinkang-dotcom/boola-market/raw/main/docs/demo.mp4)
 
 ![Boola Market home](docs/home.png)
 
