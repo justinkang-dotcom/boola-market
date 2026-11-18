@@ -40,3 +40,15 @@ Sign-up rejects anything that isn’t an `@yale.edu` address.
 - Winner and seller get a handoff page: chat to set a meetup, optional resco-to-resco delivery, then mark paid (Venmo or cash) and confirm completion.
 - After the handoff, each side can leave a star rating and a written review. Those reviews show on the profile and change the average.
 - Message a seller about a fixed-price listing and attach an offer.
+
+## Demo
+
+[Watch the 70-second demo](docs/demo.mp4)
+
+| Bidding | Meetup chat | Completed |
+|---|---|---|
+| ![Bidding](docs/bidding.png) | ![Meetup chat](docs/meetup-chat.png) | ![Completed](docs/completed.png) |
+
+| Writing a review | Seller profile |
+|---|---|
+| ![Review](docs/review.png) | ![Seller profile](docs/seller-review.png) |
