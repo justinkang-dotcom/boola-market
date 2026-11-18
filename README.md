@@ -49,11 +49,13 @@ Sign-up rejects anything that isn’t an `@yale.edu` address.
 
 ## Demo
 
-[Watch the 70-second demo](docs/demo.mp4)
+[Watch the 66-second demo](docs/demo.mp4)
 
-| Bidding | Meetup chat | Completed |
+![Boola Market home](docs/home.png)
+
+| Bidding | Ticket transfer chat | Completed |
 |---|---|---|
-| ![Bidding](docs/bidding.png) | ![Meetup chat](docs/meetup-chat.png) | ![Completed](docs/completed.png) |
+| ![Bidding](docs/bidding.png) | ![Transfer chat](docs/transfer-chat.png) | ![Completed](docs/completed.png) |
 
 | Writing a review | Seller profile |
 |---|---|
