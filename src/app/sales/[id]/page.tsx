@@ -5,7 +5,14 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { money } from "@/lib/format";
 
-const STEPS = [
+const DIGITAL_STEPS = [
+  { id: "won", label: "Won" },
+  { id: "paid", label: "Payment sent" },
+  { id: "transferred", label: "Ticket transferred" },
+  { id: "completed", label: "Completed" },
+];
+
+const PICKUP_STEPS = [
   { id: "won", label: "Won" },
   { id: "meetup", label: "Meetup arranged" },
   { id: "paid", label: "Paid" },
@@ -29,7 +36,9 @@ export default async function SalePage({ params }: { params: Promise<{ id: strin
   if (!sale || (sale.buyerId !== user.id && sale.sellerId !== user.id)) notFound();
 
   const other = user.id === sale.buyerId ? sale.seller : sale.buyer;
-  const stepIndex = Math.max(0, STEPS.findIndex((step) => step.id === sale.status));
+  const digital = sale.handoff === "digital";
+  const steps = digital ? DIGITAL_STEPS : PICKUP_STEPS;
+  const stepIndex = Math.max(0, steps.findIndex((step) => step.id === sale.status));
   const alreadyReviewed = await prisma.review.findFirst({
     where: { listingId: sale.listingId, buyerId: user.id, sellerId: other.id },
   });
@@ -45,12 +54,14 @@ export default async function SalePage({ params }: { params: Promise<{ id: strin
           <Link href={`/listings/${sale.listingId}`} className="font-serif text-2xl leading-tight">
             {sale.listing.title}
           </Link>
-          <p className="text-sm text-mute">with {other.name}</p>
+          <p className="text-sm text-mute">
+            with {other.name} · {digital ? "Digital transfer" : "In-person pickup"}
+          </p>
         </div>
       </div>
 
       <ol className="grid grid-cols-4 gap-2">
-        {STEPS.map((step, index) => (
+        {steps.map((step, index) => (
           <li
             key={step.id}
             className={`rounded-xl px-2 py-2 text-center text-xs font-medium ${index <= stepIndex ? "bg-yale text-white" : "bg-white text-mute"}`}
@@ -61,7 +72,7 @@ export default async function SalePage({ params }: { params: Promise<{ id: strin
       </ol>
 
       <div className="card space-y-3 p-4">
-        <h2 className="font-medium">Arrange the handoff</h2>
+        <h2 className="font-medium">{digital ? "Transfer the ticket" : "Arrange the handoff"}</h2>
         <ol className="space-y-2">
           {sale.messages.map((message) => (
             <li key={message.id} className={`flex ${message.senderId === user.id ? "justify-end" : "justify-start"}`}>
@@ -71,11 +82,15 @@ export default async function SalePage({ params }: { params: Promise<{ id: strin
               </p>
             </li>
           ))}
-          {sale.messages.length === 0 && <li className="text-sm text-mute">Say where you’ll meet. Berkeley gate, Bass, or a resco courtyard.</li>}
+          {sale.messages.length === 0 && (
+            <li className="text-sm text-mute">
+              {digital ? "Send the PDF or box-office transfer to their Yale email." : "Say where you’ll meet. Berkeley gate, Bass, or a resco courtyard."}
+            </li>
+          )}
         </ol>
         <form action={postSaleMessage} className="flex gap-2">
           <input type="hidden" name="saleId" value={sale.id} />
-          <input id="sale-message" name="body" placeholder="Pickup at Berkeley, 8pm?" className="flex-1" />
+          <input id="sale-message" name="body" placeholder={digital ? "Sending the transfer to your email" : "Pickup at Berkeley, 8pm?"} className="flex-1" />
           <button className="btn-primary" type="submit">
             Send
           </button>
@@ -83,14 +98,16 @@ export default async function SalePage({ params }: { params: Promise<{ id: strin
       </div>
 
       <div className="card space-y-3 p-4">
-        <form action={updateSale}>
-          <input type="hidden" name="saleId" value={sale.id} />
-          <input type="hidden" name="intent" value="delivery" />
-          <button id="delivery-toggle" className="btn-secondary" type="submit">
-            {sale.delivery ? "Resco-to-resco delivery requested" : "Request resco-to-resco delivery"}
-          </button>
-        </form>
-        {sale.status === "won" && (
+        {!digital && (
+          <form action={updateSale}>
+            <input type="hidden" name="saleId" value={sale.id} />
+            <input type="hidden" name="intent" value="delivery" />
+            <button id="delivery-toggle" className="btn-secondary" type="submit">
+              {sale.delivery ? "Resco-to-resco delivery requested" : "Request resco-to-resco delivery"}
+            </button>
+          </form>
+        )}
+        {!digital && sale.status === "won" && (
           <form action={updateSale}>
             <input type="hidden" name="saleId" value={sale.id} />
             <input type="hidden" name="intent" value="meetup" />
@@ -99,19 +116,30 @@ export default async function SalePage({ params }: { params: Promise<{ id: strin
             </button>
           </form>
         )}
-        {sale.status !== "completed" && sale.status !== "paid" && (
+        {(digital ? sale.status === "won" : sale.status === "won" || sale.status === "meetup") && (
           <form action={updateSale} className="flex flex-wrap gap-2">
             <input type="hidden" name="saleId" value={sale.id} />
             <input type="hidden" name="intent" value="paid" />
             <button id="mark-venmo" className="btn-primary" name="method" value="venmo" type="submit">
-              Mark paid via Venmo
+              {digital ? "Payment sent via Venmo" : "Mark paid via Venmo"}
             </button>
-            <button id="mark-cash" className="btn-secondary" name="method" value="cash" type="submit">
-              Mark paid in cash
+            {!digital && (
+              <button id="mark-cash" className="btn-secondary" name="method" value="cash" type="submit">
+                Mark paid in cash
+              </button>
+            )}
+          </form>
+        )}
+        {digital && sale.status === "paid" && (
+          <form action={updateSale}>
+            <input type="hidden" name="saleId" value={sale.id} />
+            <input type="hidden" name="intent" value="transferred" />
+            <button id="mark-transferred" className="btn-primary" type="submit">
+              Ticket transferred
             </button>
           </form>
         )}
-        {sale.status !== "completed" && (
+        {sale.status !== "completed" && (sale.status === "transferred" || (!digital && sale.status === "paid")) && (
           <form action={updateSale}>
             <input type="hidden" name="saleId" value={sale.id} />
             <input type="hidden" name="intent" value="confirm" />

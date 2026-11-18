@@ -82,6 +82,7 @@ model Sale {
   buyer        User          @relation("SalesAsBuyer", fields: [buyerId], references: [id])
   amountCents  Int
   status       String        @default("won")
+  handoff      String        @default("pickup")
   delivery     Boolean       @default(false)
   paidMethod   String        @default("")
   sellerDone   Boolean       @default(false)

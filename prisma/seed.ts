@@ -219,7 +219,7 @@ async function main() {
     ],
   });
 
-  console.log("Seeded Elm. Demo login: jordan.park@yale.edu / yaleblue");
+  console.log("Seeded Boola Market. Demo login: jordan.park@yale.edu / yaleblue");
 }
 
 main()
